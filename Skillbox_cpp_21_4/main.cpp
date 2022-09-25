@@ -36,22 +36,23 @@ struct person {
 
 void placeOnField(std::vector<person> &persons);
 
+bool isNumber(std::string str){
+    if (str.size()==0) return false;
+    for(int i=0;i<str.size();++i) if (str[i]<'0'||str[i]>'9') return false;
+    return true;
+}
+
 int input(std::string prompt){
-    int res;
-    std::cout << prompt;
-    std::cin >>res;
-    return res;
+    std::string str;
+    do{
+        std::cout << prompt;
+        std::cin >>str;
+    }while(!isNumber(str));
+    return std::stoi(str);
 }
 
 std::string inputs(std::string prompt){
     std::string res;
-    std::cout << prompt;
-    std::cin >>res;
-    return res;
-}
-
-float inputf(std::string prompt){
-    float res;
     std::cout << prompt;
     std::cin >>res;
     return res;
@@ -298,10 +299,29 @@ void game(std::vector<person> &persons){
     while(!game_over(persons)){
         COMMAND comm;
         for(int i=0;i<persons.size();++i){
-            if (!persons[i].npc) print_field(persons);
+            if (!persons[i].npc) {
+                print_field(persons);
+                do{comm=get_command();
+                switch (comm) {
+                    case UP:
+                    case DOWN:
+                    case LEFT:
+                    case RIGHT:
+                        break;
+                    case LOAD:
+                        load(persons);
+                        print_field(persons);
+                        break;
+                    case SAVE:
+                        save(persons);
+                        break;
+                    default:
+                        break;
+                }}while(comm>RIGHT||comm<UP);
+            }
             struct coord new_move = (persons[i].npc?
                     get_move(generate_move_command()):
-                    get_move(get_command()));
+                    get_move(comm));
             struct coord new_coord = move(persons[i].coords, new_move);
             bool no_collides = notCollide(persons, new_coord);
             if(no_collides &&
@@ -316,21 +336,7 @@ void game(std::vector<person> &persons){
                 }
             }
         }
-        switch (comm) {
-            case UP:
-            case DOWN:
-            case LEFT:
-            case RIGHT:
-                break;
-            case LOAD:
-                load(persons);
-                break;
-            case SAVE:
-                save(persons);
-                break;
-            default:
-                break;
-        }
+
 
     }
 }
